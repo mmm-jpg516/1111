@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>暑假最難忘的回憶——暑輔</title>
+  <!-- 載入 Google Fonts：Noto Serif TC（內文與標題）與 Noto Sans TC（介面標籤） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet" />
+  <!-- 載入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // 設定 Tailwind 字體與自訂延伸屬性
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Noto Serif TC"', 'serif'],
+            sans: ['"Noto Sans TC"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body id="appBody" class="min-h-screen overflow-x-hidden bg-[#FDFBF7] text-[#2C3E50] font-sans antialiased transition-colors duration-300 selection:bg-[#E69D45]/25 selection:text-[#2C3E50]">
+
+  <!-- 頂部閱讀進度條 -->
+  <div class="fixed top-0 left-0 right-0 z-50 h-1.5 bg-black/5">
+    <div id="readingProgress" class="h-full w-0 bg-gradient-to-r from-[#E69D45] via-[#F2B866] to-[#4A90E2] transition-all duration-150 ease-out rounded-r-full"></div>
+  </div>
+
+  <!-- 懸浮／置頂閱讀控制工具列 -->
+  <nav id="toolbar" aria-label="閱讀設定工具列" class="sticky top-1.5 z-40 mx-auto max-w-3xl px-4 pt-3 sm:px-6">
+    <div id="toolbarInner" class="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#EFE8DC] bg-[#FDFBF7]/90 px-3.5 py-2.5 shadow-sm backdrop-blur-md transition-colors duration-300">
+      <!-- 左側：頁面識別標籤 -->
+      <div class="flex items-center gap-2 text-xs sm:text-sm font-medium text-[#64748B]" id="toolbarLabel">
+        <span class="inline-flex h-2.5 w-2.5 rounded-full bg-[#E69D45]"></span>
+        <span>夏日隨筆 · 閱讀模式</span>
+      </div>
+
+      <!-- 右側：閱讀體驗控制按鈕群 -->
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <!-- 字體大小切換 -->
+        <div id="fontGroup" class="inline-flex items-center rounded-xl border border-[#EFE8DC] bg-white/80 p-1 transition-colors duration-300">
+          <button type="button" id="btnFontNormal" onclick="setFontSize('normal')" class="min-h-[34px] rounded-lg px-2.5 py-1 text-xs sm:text-sm font-medium bg-[#E69D45] text-white shadow-xs transition-all cursor-pointer">
+            標準
+          </button>
+          <button type="button" id="btnFontLarge" onclick="setFontSize('large')" class="min-h-[34px] rounded-lg px-2.5 py-1 text-xs sm:text-sm font-medium text-[#64748B] hover:text-[#2C3E50] transition-all cursor-pointer">
+            放大
+          </button>
+        </div>
+
+        <!-- 首行縮排切換 -->
+        <button type="button" id="btnIndent" onclick="toggleIndent()" title="切換段首空兩格排版" class="min-h-[38px] rounded-xl border border-[#EFE8DC] bg-white/80 px-3 py-1.5 text-xs sm:text-sm font-medium text-[#2C3E50] hover:border-[#E69D45] transition-all cursor-pointer">
+          首行縮排
+        </button>
+
+        <!-- 背景主題切換 -->
+        <div id="themeGroup" class="inline-flex items-center gap-1 rounded-xl border border-[#EFE8DC] bg-white/80 p-1 transition-colors duration-300">
+          <button type="button" id="themeCream" onclick="setTheme('cream')" title="暖陽米白" class="min-h-[34px] rounded-lg px-2.5 py-1 text-xs font-medium bg-[#FFF3DF] text-[#9A5B13] ring-1 ring-[#E69D45] transition-all cursor-pointer">
+            暖陽米白
+          </button>
+          <button type="button" id="themeGreen" onclick="setTheme('green')" title="護眼淺綠" class="min-h-[34px] rounded-lg px-2.5 py-1 text-xs font-medium text-[#526E58] hover:bg-[#E4F0E6] transition-all cursor-pointer">
+            護眼淺綠
+          </button>
+          <button type="button" id="themeDark" onclick="setTheme('dark')" title="夜間模式" class="min-h-[34px] rounded-lg px-2.5 py-1 text-xs font-medium text-[#64748B] hover:bg-slate-200/70 transition-all cursor-pointer">
+            夜間模式
+          </button>
+        </div>
+
+        <!-- 複製全文按鈕 -->
+        <button type="button" id="btnCopy" onclick="copyEssay()" title="複製全文" class="min-h-[38px] inline-flex items-center gap-1.5 rounded-xl border border-[#4A90E2]/30 bg-[#4A90E2]/10 px-3 py-1.5 text-xs sm:text-sm font-medium text-[#357ABD] hover:bg-[#4A90E2]/20 transition-all cursor-pointer">
+          <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <span class="hidden sm:inline">複製全文</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主要內容容器 -->
+  <main class="mx-auto max-w-3xl px-4 pt-6 pb-16 sm:px-6 sm:pt-10">
+
+    <!-- 頁首橫幅區塊 -->
+    <header class="mb-8 sm:mb-10 text-center">
+      <!-- 夏日校園裝飾徽章 -->
+      <div id="headerBadge" class="mb-5 inline-flex items-center gap-2 rounded-full border border-[#F5DFC1] bg-[#FFF8EE] px-4 py-1.5 text-xs sm:text-sm font-medium text-[#B86E18] shadow-2xs transition-colors duration-300">
+        <!-- 溫暖陽光 SVG 圖示 -->
+        <svg class="h-4 w-4 text-[#E69D45]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+        </svg>
+        <span>夏日隨筆 · 校園記憶</span>
+      </div>
+
+      <!-- 文章主標題 -->
+      <h1 id="essayTitle" class="font-serif text-2xl sm:text-4xl font-bold tracking-wide leading-snug mb-4">
+        暑假最難忘的回憶——暑輔
+      </h1>
+
+      <!-- 裝飾分隔線 -->
+      <div class="mx-auto mb-4 flex items-center justify-center gap-2">
+        <span class="h-1 w-8 rounded-full bg-[#E69D45]"></span>
+        <span class="h-1.5 w-1.5 rounded-full bg-[#4A90E2]"></span>
+        <span class="h-1 w-8 rounded-full bg-[#4A90E2]/60"></span>
+      </div>
+
+      <!-- 文章資訊（閱讀時間與字數統計） -->
+      <div id="metaInfo" class="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-[#64748B] transition-colors duration-300">
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="h-4 w-4 text-[#4A90E2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          閱讀時間：約 2 分鐘
+        </span>
+        <span class="opacity-40">|</span>
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="h-4 w-4 text-[#E69D45]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          全文字數：<span id="wordCount">547</span> 字
+        </span>
+      </div>
+    </header>
+
+    <!-- 散文主體卡片（筆記本紙張質感） -->
+    <article id="articleCard" class="relative overflow-hidden rounded-3xl border border-[#EFE8DC] bg-white/95 px-6 py-8 sm:px-12 sm:py-12 shadow-[0_10px_40px_-15px_rgba(230,157,69,0.18)] transition-all duration-300">
+      <!-- 頂部暖陽與晴空雙色書籤飾條 -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#E69D45] via-[#F4C47C] to-[#4A90E2]"></div>
+
+      <!-- 筆記本裝訂孔裝飾（桌機版左側微視覺點綴） -->
+      <div aria-hidden="true" class="hidden sm:flex flex-col justify-between absolute left-4 top-16 bottom-16 opacity-25 pointer-events-none">
+        <span class="h-2.5 w-2.5 rounded-full bg-[#E69D45]"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-[#4A90E2]"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-[#E69D45]"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-[#4A90E2]"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-[#E69D45]"></span>
+      </div>
+
+      <!-- 散文段落容器 -->
+      <div id="essayBody" class="font-serif text-[17px] sm:text-[19px] leading-[1.95] tracking-[0.03em] space-y-6 sm:space-y-7 transition-all duration-300">
+        <!-- 第一段 -->
+        <p class="essay-paragraph indent-[2em] opacity-0 translate-y-4 transition-all duration-700 ease-out">暑假對很多人來說，應該是可以睡到自然醒、出去玩和放鬆的日子。不過，我今年暑假最難忘的回憶，卻是每天到學校參加暑期輔導。雖然一開始覺得暑假還要早起上課很累，也很羨慕其他可以出去玩的同學，但經過一段時間後，我發現暑輔其實也帶給我不少特別的回憶。</p>
+
+        <!-- 第二段 -->
+        <p class="essay-paragraph indent-[2em] opacity-0 translate-y-4 transition-all duration-700 ease-out">每天早上，我都必須早早起床準備上學。剛開始的幾天總是覺得睡不飽，上課時也常常忍不住打哈欠。不過，和同學一起上課、一起吃午餐、一起聊天，讓原本枯燥的暑輔變得有趣許多。有時候下課時，我們會互相分享暑假的事情，或一起討論上課的內容，這些平凡的小事反而成了我暑假中最開心的時光。</p>
+
+        <!-- 第三段 -->
+        <p class="essay-paragraph indent-[2em] opacity-0 translate-y-4 transition-all duration-700 ease-out">暑輔也讓我複習了不少以前學過的課程。雖然有些內容比較困難，寫作業時也會遇到不會的題目，但在老師的講解和同學的幫助下，我慢慢把不熟悉的地方弄懂了。這讓我明白，只要願意花時間努力，就能一步一步進步。</p>
+
+        <!-- 第四段 -->
+        <p class="essay-paragraph indent-[2em] opacity-0 translate-y-4 transition-all duration-700 ease-out">回想這個暑假，雖然沒有每天到處遊玩，也沒有特別刺激的旅行，但暑輔卻成為我最難忘的一段經歷。它不只讓我學到了知識，也讓我和同學留下了許多共同的回憶。現在暑假已經結束，再回頭想想，那些一起早起、上課、聊天和努力讀書的日子，其實也是一種很珍貴的回憶。</p>
+
+        <!-- 第五段 -->
+        <p class="essay-paragraph indent-[2em] opacity-0 translate-y-4 transition-all duration-700 ease-out">我想，最難忘的回憶不一定要是多麼特別的大事，有時候就是和熟悉的人一起度過一段普通的日子。對我來說，今年暑假的暑期輔導，就是這樣一段平凡卻難忘的回憶。</p>
+      </div>
+
+      <!-- 文章結尾落款印記 -->
+      <div id="articleEndMark" class="mt-10 pt-6 border-t border-[#EFE8DC] flex items-center justify-between text-xs sm:text-sm text-[#64748B] transition-colors duration-300">
+        <span class="font-serif italic">—— 記一段平凡卻閃亮的夏日校園時光</span>
+        <span class="inline-flex items-center gap-1 rounded-full bg-[#4A90E2]/10 px-3 py-1 text-[#4A90E2] font-medium">
+          完
+        </span>
+      </div>
+    </article>
+
+    <!-- 互動區塊：夏日回憶小卡 -->
+    <section aria-labelledby="memoryCardsHeading" class="mt-12 sm:mt-14">
+      <div class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#4A90E2]">SUMMER REFLECTIONS</span>
+          <h2 id="memoryCardsHeading" class="font-serif text-xl sm:text-2xl font-bold mt-0.5">
+            夏日回憶小卡
+          </h2>
+        </div>
+        <p id="cardsSubtext" class="text-xs sm:text-sm text-[#64748B]">
+          點擊小卡，重溫暑輔時光的三個溫暖片段
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        <!-- 小卡 1：早起與陪伴 -->
+        <button type="button" onclick="toggleCard(0)" class="memory-card group text-left rounded-2xl border border-[#EFE8DC] bg-white/95 p-5 shadow-sm hover:-translate-y-1 hover:border-[#E69D45] transition-all duration-300 cursor-pointer">
+          <div class="flex items-center justify-between mb-3">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF4E2] text-[#E69D45]">
+              <!-- 朝陽與校園圖示 -->
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </span>
+            <span class="text-xs font-medium text-[#E69D45] bg-[#FFF8EE] px-2.5 py-1 rounded-full">片段 01</span>
+          </div>
+          <h3 class="font-serif text-lg font-bold mb-1.5 group-hover:text-[#E69D45] transition-colors">
+            早起與陪伴
+          </h3>
+          <p class="card-desc text-sm text-[#64748B] leading-relaxed">
+            從睡眼惺忪的早晨開始，因為有同學一起上課、吃午餐與聊天，枯燥變成了期待。
+          </p>
+          <div id="cardDetail0" class="hidden mt-3 pt-3 border-t border-dashed border-[#EFE8DC] text-xs leading-relaxed text-[#B86E18]">
+            「有時候下課時，我們會互相分享暑假的事情，這些平凡的小事反而成了最開心的時光。」
+          </div>
+        </button>
+
+        <!-- 小卡 2：課業上的突破 -->
+        <button type="button" onclick="toggleCard(1)" class="memory-card group text-left rounded-2xl border border-[#EFE8DC] bg-white/95 p-5 shadow-sm hover:-translate-y-1 hover:border-[#4A90E2] transition-all duration-300 cursor-pointer">
+          <div class="flex items-center justify-between mb-3">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#EBF3FE] text-[#4A90E2]">
+              <!-- 書本與成長圖示 -->
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </span>
+            <span class="text-xs font-medium text-[#4A90E2] bg-[#EBF3FE] px-2.5 py-1 rounded-full">片段 02</span>
+          </div>
+          <h3 class="font-serif text-lg font-bold mb-1.5 group-hover:text-[#4A90E2] transition-colors">
+            課業上的突破
+          </h3>
+          <p class="card-desc text-sm text-[#64748B] leading-relaxed">
+            面對困難的題目不再卻步，在老師講解與同學互助下，一點一滴累積向前的力量。
+          </p>
+          <div id="cardDetail1" class="hidden mt-3 pt-3 border-t border-dashed border-[#EFE8DC] text-xs leading-relaxed text-[#357ABD]">
+            「只要願意花時間努力，就能一步一步進步。」
+          </div>
+        </button>
+
+        <!-- 小卡 3：平凡卻珍貴的日常 -->
+        <button type="button" onclick="toggleCard(2)" class="memory-card group text-left rounded-2xl border border-[#EFE8DC] bg-white/95 p-5 shadow-sm hover:-translate-y-1 hover:border-[#E69D45] transition-all duration-300 cursor-pointer">
+          <div class="flex items-center justify-between mb-3">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF4E2] text-[#E69D45]">
+              <!-- 溫暖星光與心意圖示 -->
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </span>
+            <span class="text-xs font-medium text-[#E69D45] bg-[#FFF8EE] px-2.5 py-1 rounded-full">片段 03</span>
+          </div>
+          <h3 class="font-serif text-lg font-bold mb-1.5 group-hover:text-[#E69D45] transition-colors">
+            平凡卻珍貴的日常
+          </h3>
+          <p class="card-desc text-sm text-[#64748B] leading-relaxed">
+            沒有遠行的暑假同樣精彩，和熟悉的人並肩度過普通日子，便是最難忘的青春印記。
+          </p>
+          <div id="cardDetail2" class="hidden mt-3 pt-3 border-t border-dashed border-[#EFE8DC] text-xs leading-relaxed text-[#B86E18]">
+            「最難忘的回憶不一定要是多麼特別的大事，有時候就是和熟悉的人一起度過一段普通的日子。」
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- 頁尾結語 -->
+    <footer id="pageFooter" class="mt-14 pt-8 border-t border-[#EFE8DC] text-center text-xs sm:text-sm text-[#64748B] transition-colors duration-300">
+      <p class="font-serif mb-3">
+        願每一個平凡的夏日午後，都成為往後回首時最溫柔的光。
+      </p>
+      <button type="button" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" class="inline-flex items-center gap-1.5 rounded-full border border-[#EFE8DC] bg-white/80 px-4 py-2 text-xs font-medium text-[#2C3E50] hover:border-[#E69D45] hover:text-[#E69D45] transition-all cursor-pointer shadow-2xs" id="backToTopBtn">
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+        回到頂部
+      </button>
+    </footer>
+  </main>
+
+  <!-- 複製成功提示訊息框（取代 alert） -->
+  <div id="toastMessage" role="status" aria-live="polite" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-300">
+    <div class="inline-flex items-center gap-2 rounded-full bg-[#2C3E50] px-5 py-2.5 text-sm font-medium text-white shadow-lg">
+      <svg class="h-4 w-4 text-[#E69D45]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+      <span>已將文章內容複製到剪貼簿</span>
+    </div>
+  </div>
+
+  <script>
+    // 狀態管理
+    let currentTheme = 'cream';
+    let currentFontSize = 'normal';
+    let isIndented = true;
+
+    // 初始化：計算字數、啟動滾動進度條與段落淡入動畫
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        updateWordCount();
+        initScrollProgress();
+        initParagraphAnimations();
+      } catch (err) {
+        console.error('初始化過程發生錯誤:', err);
+      }
+    });
+
+    // 動態計算散文內文字數（不含空白）
+    function updateWordCount() {
+      const paragraphs = document.querySelectorAll('.essay-paragraph');
+      let totalChars = 0;
+      paragraphs.forEach((p) => {
+        totalChars += p.textContent.replace(/\s+/g, '').length;
+      });
+      const wordCountEl = document.getElementById('wordCount');
+      if (wordCountEl && totalChars > 0) {
+        wordCountEl.textContent = totalChars;
+      }
+    }
+
+    // 頂部閱讀進度條更新
+    function initScrollProgress() {
+      const progressBar = document.getElementById('readingProgress');
+      const updateProgress = () => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const percent = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
+        if (progressBar) {
+          progressBar.style.width = percent + '%';
+        }
+      };
+      window.addEventListener('scroll', updateProgress, { passive: true });
+      updateProgress();
+    }
+
+    // 段落滾動漸顯動畫
+    function initParagraphAnimations() {
+      const paragraphs = document.querySelectorAll('.essay-paragraph');
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.remove('opacity-0', 'translate-y-4');
+                entry.target.classList.add('opacity-100', 'translate-y-0');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12 }
+        );
+        paragraphs.forEach((p, idx) => {
+          p.style.transitionDelay = `${idx * 80}ms`;
+          observer.observe(p);
+        });
+      } else {
+        // 不支援 IntersectionObserver 時直接顯示
+        paragraphs.forEach((p) => {
+          p.classList.remove('opacity-0', 'translate-y-4');
+          p.classList.add('opacity-100', 'translate-y-0');
+        });
+      }
+    }
+
+    // 切換字體大小（標準 / 放大）
+    function setFontSize(size) {
+      currentFontSize = size;
+      const essayBody = document.getElementById('essayBody');
+      const btnNormal = document.getElementById('btnFontNormal');
+      const btnLarge = document.getElementById('btnFontLarge');
+
+      if (!essayBody || !btnNormal || !btnLarge) return;
+
+      if (size === 'large') {
+        essayBody.classList.remove('text-[17px]', 'sm:text-[19px]', 'leading-[1.95]');
+        essayBody.classList.add('text-[20px]', 'sm:text-[22px]', 'leading-[2.05]');
+
+        btnLarge.classList.add('bg-[#E69D45]', 'text-white');
+        btnLarge.classList.remove('text-[#64748B]', 'hover:text-[#2C3E50]', 'text-slate-300');
+
+        btnNormal.classList.remove('bg-[#E69D45]', 'text-white');
+        btnNormal.classList.add(currentTheme === 'dark' ? 'text-slate-300' : 'text-[#64748B]');
+      } else {
+        essayBody.classList.remove('text-[20px]', 'sm:text-[22px]', 'leading-[2.05]');
+        essayBody.classList.add('text-[17px]', 'sm:text-[19px]', 'leading-[1.95]');
+
+        btnNormal.classList.add('bg-[#E69D45]', 'text-white');
+        btnNormal.classList.remove('text-[#64748B]', 'hover:text-[#2C3E50]', 'text-slate-300');
+
+        btnLarge.classList.remove('bg-[#E69D45]', 'text-white');
+        btnLarge.classList.add(currentTheme === 'dark' ? 'text-slate-300' : 'text-[#64748B]');
+      }
+    }
+
+    // 切換段落首行空兩格縮排
+    function toggleIndent() {
+      isIndented = !isIndented;
+      const paragraphs = document.querySelectorAll('.essay-paragraph');
+      const btnIndent = document.getElementById('btnIndent');
+
+      paragraphs.forEach((p) => {
+        if (isIndented) {
+          p.classList.add('indent-[2em]');
+        } else {
+          p.classList.remove('indent-[2em]');
+        }
+      });
+
+      if (btnIndent) {
+        if (isIndented) {
+          btnIndent.classList.add('ring-1', 'ring-[#E69D45]');
+        } else {
+          btnIndent.classList.remove('ring-1', 'ring-[#E69D45]');
+        }
+      }
+    }
+
+    // 切換閱讀背景主題（暖陽米白 / 護眼淺綠 / 夜間模式）
+    function setTheme(theme) {
+      currentTheme = theme;
+      const body = document.getElementById('appBody');
+      const toolbarInner = document.getElementById('toolbarInner');
+      const articleCard = document.getElementById('articleCard');
+      const articleEndMark = document.getElementById('articleEndMark');
+      const pageFooter = document.getElementById('pageFooter');
+      const metaInfo = document.getElementById('metaInfo');
+      const cardsSubtext = document.getElementById('cardsSubtext');
+      const memoryCards = document.querySelectorAll('.memory-card');
+      const cardDescs = document.querySelectorAll('.card-desc');
+      const fontGroup = document.getElementById('fontGroup');
+      const themeGroup = document.getElementById('themeGroup');
+      const btnIndent = document.getElementById('btnIndent');
+      const backToTopBtn = document.getElementById('backToTopBtn');
+
+      // 重設主題按鈕樣式
+      const btnCream = document.getElementById('themeCream');
+      const btnGreen = document.getElementById('themeGreen');
+      const btnDark = document.getElementById('themeDark');
+
+      [btnCream, btnGreen, btnDark].forEach((btn) => {
+        btn.classList.remove(
+          'bg-[#FFF3DF]', 'text-[#9A5B13]', 'ring-1', 'ring-[#E69D45]',
+          'bg-[#D7ECD9]', 'text-[#245930]', 'ring-[#4E9A60]',
+          'bg-slate-700', 'text-amber-300', 'ring-amber-400'
+        );
+      });
+
+      // 清除舊背景與文字色
+      body.classList.remove('bg-[#FDFBF7]', 'text-[#2C3E50]', 'bg-[#EBF3EC]', 'text-[#233829]', 'bg-[#161B22]', 'text-[#E2E8F0]');
+      toolbarInner.classList.remove('bg-[#FDFBF7]/90', 'border-[#EFE8DC]', 'bg-[#EBF3EC]/90', 'border-[#CFE2D2]', 'bg-[#161B22]/90', 'border-[#2E3846]');
+      articleCard.classList.remove('bg-white/95', 'border-[#EFE8DC]', 'bg-[#F6FAF6]', 'border-[#CFE2D2]', 'bg-[#1F2630]', 'border-[#2E3846]');
+      articleEndMark.classList.remove('border-[#EFE8DC]', 'text-[#64748B]', 'border-[#CFE2D2]', 'text-[#526E58]', 'border-[#2E3846]', 'text-slate-400');
+      pageFooter.classList.remove('border-[#EFE8DC]', 'text-[#64748B]', 'border-[#CFE2D2]', 'text-[#526E58]', 'border-[#2E3846]', 'text-slate-400');
+
+      if (theme === 'cream') {
+        body.classList.add('bg-[#FDFBF7]', 'text-[#2C3E50]');
+        toolbarInner.classList.add('bg-[#FDFBF7]/90', 'border-[#EFE8DC]');
+        articleCard.classList.add('bg-white/95', 'border-[#EFE8DC]');
+        articleEndMark.classList.add('border-[#EFE8DC]', 'text-[#64748B]');
+        pageFooter.classList.add('border-[#EFE8DC]', 'text-[#64748B]');
+        metaInfo.className = 'flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-[#64748B] transition-colors duration-300';
+        cardsSubtext.className = 'text-xs sm:text-sm text-[#64748B]';
+
+        fontGroup.className = 'inline-flex items-center rounded-xl border border-[#EFE8DC] bg-white/80 p-1 transition-colors duration-300';
+        themeGroup.className = 'inline-flex items-center gap-1 rounded-xl border border-[#EFE8DC] bg-white/80 p-1 transition-colors duration-300';
+        btnIndent.className = `min-h-[38px] rounded-xl border border-[#EFE8DC] bg-white/80 px-3 py-1.5 text-xs sm:text-sm font-medium text-[#2C3E50] hover:border-[#E69D45] transition-all cursor-pointer ${isIndented ? 'ring-1 ring-[#E69D45]' : ''}`;
+        backToTopBtn.className = 'inline-flex items-center gap-1.5 rounded-full border border-[#EFE8DC] bg-white/80 px-4 py-2 text-xs font-medium text-[#2C3E50] hover:border-[#E69D45] hover:text-[#E69D45] transition-all cursor-pointer shadow-2xs';
+
+        memoryCards.forEach((c) => {
+          c.classList.remove('bg-[#F6FAF6]', 'border-[#CFE2D2]', 'bg-[#1F2630]', 'border-[#2E3846]');
+          c.classList.add('bg-white/95', 'border-[#EFE8DC]');
+        });
+        cardDescs.forEach((d) => {
+          d.className = 'card-desc text-sm text-[#64748B] leading-relaxed';
+        });
+
+        btnCream.classList.add('bg-[#FFF3DF]', 'text-[#9A5B13]', 'ring-1', 'ring-[#E69D45]');
+      } else if (theme === 'green') {
+        body.classList.add('bg-[#EBF3EC]', 'text-[#233829]');
+        toolbarInner.classList.add('bg-[#EBF3EC]/90', 'border-[#CFE2D2]');
+        articleCard.classList.add('bg-[#F6FAF6]', 'border-[#CFE2D2]');
+        articleEndMark.classList.add('border-[#CFE2D2]', 'text-[#526E58]');
+        pageFooter.classList.add('border-[#CFE2D2]', 'text-[#526E58]');
+        metaInfo.className = 'flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-[#526E58] transition-colors duration-300';
+        cardsSubtext.className = 'text-xs sm:text-sm text-[#526E58]';
+
+        fontGroup.className = 'inline-flex items-center rounded-xl border border-[#CFE2D2] bg-[#F6FAF6]/90 p-1 transition-colors duration-300';
+        themeGroup.className = 'inline-flex items-center gap-1 rounded-xl border border-[#CFE2D2] bg-[#F6FAF6]/90 p-1 transition-colors duration-300';
+        btnIndent.className = `min-h-[38px] rounded-xl border border-[#CFE2D2] bg-[#F6FAF6]/90 px-3 py-1.5 text-xs sm:text-sm font-medium text-[#233829] hover:border-[#4E9A60] transition-all cursor-pointer ${isIndented ? 'ring-1 ring-[#E69D45]' : ''}`;
+        backToTopBtn.className = 'inline-flex items-center gap-1.5 rounded-full border border-[#CFE2D2] bg-[#F6FAF6]/90 px-4 py-2 text-xs font-medium text-[#233829] hover:border-[#4E9A60] transition-all cursor-pointer shadow-2xs';
+
+        memoryCards.forEach((c) => {
+          c.classList.remove('bg-white/95', 'border-[#EFE8DC]', 'bg-[#1F2630]', 'border-[#2E3846]');
+          c.classList.add('bg-[#F6FAF6]', 'border-[#CFE2D2]');
+        });
+        cardDescs.forEach((d) => {
+          d.className = 'card-desc text-sm text-[#526E58] leading-relaxed';
+        });
+
+        btnGreen.classList.add('bg-[#D7ECD9]', 'text-[#245930]', 'ring-1', 'ring-[#4E9A60]');
+      } else if (theme === 'dark') {
+        body.classList.add('bg-[#161B22]', 'text-[#E2E8F0]');
+        toolbarInner.classList.add('bg-[#161B22]/90', 'border-[#2E3846]');
+        articleCard.classList.add('bg-[#1F2630]', 'border-[#2E3846]');
+        articleEndMark.classList.add('border-[#2E3846]', 'text-slate-400');
+        pageFooter.classList.add('border-[#2E3846]', 'text-slate-400');
+        metaInfo.className = 'flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-slate-400 transition-colors duration-300';
+        cardsSubtext.className = 'text-xs sm:text-sm text-slate-400';
+
+        fontGroup.className = 'inline-flex items-center rounded-xl border border-[#2E3846] bg-[#1F2630] p-1 transition-colors duration-300';
+        themeGroup.className = 'inline-flex items-center gap-1 rounded-xl border border-[#2E3846] bg-[#1F2630] p-1 transition-colors duration-300';
+        btnIndent.className = `min-h-[38px] rounded-xl border border-[#2E3846] bg-[#1F2630] px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-200 hover:border-[#E69D45] transition-all cursor-pointer ${isIndented ? 'ring-1 ring-[#E69D45]' : ''}`;
+        backToTopBtn.className = 'inline-flex items-center gap-1.5 rounded-full border border-[#2E3846] bg-[#1F2630] px-4 py-2 text-xs font-medium text-slate-200 hover:border-[#E69D45] hover:text-[#E69D45] transition-all cursor-pointer shadow-2xs';
+
+        memoryCards.forEach((c) => {
+          c.classList.remove('bg-white/95', 'border-[#EFE8DC]', 'bg-[#F6FAF6]', 'border-[#CFE2D2]');
+          c.classList.add('bg-[#1F2630]', 'border-[#2E3846]');
+        });
+        cardDescs.forEach((d) => {
+          d.className = 'card-desc text-sm text-slate-400 leading-relaxed';
+        });
+
+        btnDark.classList.add('bg-slate-700', 'text-amber-300', 'ring-1', 'ring-amber-400');
+      }
+
+      // 同步更新字體按鈕未選中狀態文字顏色
+      setFontSize(currentFontSize);
+    }
+
+    // 展開／收合回憶小卡引文
+    function toggleCard(index) {
+      const detail = document.getElementById(`cardDetail${index}`);
+      if (detail) {
+        detail.classList.toggle('hidden');
+      }
+    }
+
+    // 複製全文至剪貼簿（相容 iframe 環境）
+    function copyEssay() {
+      try {
+        const title = document.getElementById('essayTitle').textContent.trim();
+        const paragraphs = Array.from(document.querySelectorAll('.essay-paragraph'))
+          .map((p) => p.textContent.trim())
+          .join('\n\n');
+        const fullText = `${title}\n\n${paragraphs}`;
+
+        const tempTextarea = document.createElement('textarea');
+        tempTextarea.value = fullText;
+        tempTextarea.setAttribute('readonly', '');
+        tempTextarea.style.position = 'fixed';
+        tempTextarea.style.left = '-9999px';
+        document.body.appendChild(tempTextarea);
+        tempTextarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextarea);
+
+        showToast();
+      } catch (err) {
+        console.error('複製失敗:', err);
+      }
+    }
+
+    // 顯示底部提示框
+    let toastTimer = null;
+    function showToast() {
+      const toast = document.getElementById('toastMessage');
+      if (!toast) return;
+      toast.classList.remove('opacity-0', 'translate-y-3');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-3');
+      }, 2400);
+    }
+  </script>
+</body>
+</html>
